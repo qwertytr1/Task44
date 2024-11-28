@@ -2,16 +2,13 @@ import express from "express";
 import mysql from "mysql2";
 import cors from "cors";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: 'https://task44-p5zm.vercel.app/',
+  origin: 'https://task4-client-cjwx.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 const db = mysql.createConnection({
@@ -51,7 +48,7 @@ const authenticateToken = (req, res, next) => {
       return res.status(403).json({ Status: "Error", message: "Invalid token" });
     }
 
-    req.user = user;
+    req.user = user; // Сохраняем информацию о пользователе в запросе
     next();
   });
 };
@@ -63,7 +60,7 @@ app.post("/register", (req, res) => {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
-
+  // Генерация JWT токена для нового пользователя
   const token = jwt.sign({ username, email }, SECRET_KEY, { expiresIn: "7d" });
 
   const sql = "INSERT INTO users (`username`, `email`, `password`, `status`, `token`) VALUES (?)";
@@ -74,7 +71,7 @@ app.post("/register", (req, res) => {
       if (err.code === "ER_DUP_ENTRY") {
         return res.status(409).json({ message: "Email is already in use." });
       }
-      console.error(err);
+      console.error(err); // Вывод ошибки в консоль
       return res.status(500).json({ message: "Database error" });
     }
     return res.status(201).json({ message: "User registered successfully", token });
@@ -97,16 +94,16 @@ app.post("/login", (req, res) => {
 
     const user = result[0];
 
-
+    // Если аккаунт заблокирован
     if (user.status === "blocked") {
       return res.status(403).json({ Status: "Error", message: "Account is blocked" });
     }
 
-
+    // Генерация JWT токена
     const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "7d" });
 
     try {
-
+      // Обновление времени последнего входа
       await updateLastLogin(user.id);
     } catch (updateError) {
       console.error("Failed to update last login time:", updateError);
@@ -126,14 +123,15 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/users/block", authenticateToken, (req, res) => {
-  const { emails } = req.body;
+  const { emails } = req.body; // Получаем 'emails' из тела запроса
+
   if (!Array.isArray(emails) || emails.length === 0) {
     return res.status(400).json({ message: "Invalid request. 'emails' must be a non-empty array." });
   }
 
-  const userEmail = req.user.email;
+  const userEmail = req.user.email; // Получаем email текущего пользователя
 
-
+  // Проверяем, не пытается ли пользователь заблокировать свой собственный аккаунт
 
   const blockSql = "UPDATE users SET status = 'blocked' WHERE email IN (?)";
   db.query(blockSql, [emails], (err, result) => {
