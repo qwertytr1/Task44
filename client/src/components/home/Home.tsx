@@ -54,7 +54,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     if (!userToken) return;
     fetchUsers();
-  }, [userToken, fetchUsers]);
+  }, [userToken]);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -156,14 +156,17 @@ const Home: React.FC = () => {
   }, [selectedUsersData, navigate, dataUser, userToken]);
   const handleUnblockUsers = async () => {
     try {
-      const response = await fetch(`${API_URL}/users/unblock`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+      const response = await fetch(
+        `${API_URL}/users/unblock`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify({ ids: selectedIds }),
         },
-        body: JSON.stringify({ ids: selectedIds }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error('Failed to unblock users.');
@@ -190,14 +193,17 @@ const Home: React.FC = () => {
     const isCurrentUserDeleting = selectedUsersEmails.includes(userEmail || '');
 
     try {
-      const response = await fetch(`${API_URL}/users/delete`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+      const response = await fetch(
+        `${API_URL}/users/delete`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify({ ids: selectedIds }),
         },
-        body: JSON.stringify({ ids: selectedIds }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error('Failed to delete users.');
@@ -251,31 +257,34 @@ const Home: React.FC = () => {
         </button>
       </div>
       <div className="toolbar mb-4">
-        <button
-          type="button"
-          className="btn btn-primary me-3"
-          onClick={handleBlockUsers}
-        >
-          Block
-        </button>
-        <button
-          type="button"
-          className="btn btn-outline-primary me-3"
-          onClick={handleUnblockUsers}
-          title="Unblock Users"
-          aria-label="Unblock"
-        >
-          <i className="bi bi-unlock" />
-        </button>
-        <button
-          type="button"
-          className="btn btn-outline-danger"
-          onClick={handleDelete}
-          title="Delete Users"
-          aria-label="Delete"
-        >
-          <i className="bi bi-trash" />
-        </button>
+  <button
+    type="button"
+    className="btn btn-primary me-3"
+    onClick={handleBlockUsers}
+    disabled={selectedIds.length === 0}
+  >
+    Block
+  </button>
+  <button
+    type="button"
+    className="btn btn-outline-primary me-3"
+    onClick={handleUnblockUsers}
+    title="Unblock Users"
+    aria-label="Unblock"
+    disabled={selectedIds.length === 0}
+  >
+    <i className="bi bi-unlock" />
+  </button>
+  <button
+    type="button"
+    className="btn btn-outline-danger"
+    onClick={handleDelete}
+    title="Delete Users"
+    aria-label="Delete"
+    disabled={selectedIds.length === 0}
+  >
+    <i className="bi bi-trash" />
+  </button>
       </div>
       <table className="table table-striped table-bordered">
         <thead>

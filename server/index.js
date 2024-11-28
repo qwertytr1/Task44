@@ -38,7 +38,7 @@ const updateLastLogin = (userId) => {
 };
 
 const authenticateToken = (req, res, next) => {
-  const token = req.headers["authorization"]?.split(" ")[1]; // Извлекаем токен из заголовка Authorization
+  const token = req.headers["authorization"]?.split(" ")[1];
   if (!token) {
     return res.status(401).json({ Status: "Error", message: "Token is required" });
   }
@@ -48,7 +48,7 @@ const authenticateToken = (req, res, next) => {
       return res.status(403).json({ Status: "Error", message: "Invalid token" });
     }
 
-    req.user = user; // Сохраняем информацию о пользователе в запросе
+    req.user = user;
     next();
   });
 };
@@ -60,7 +60,6 @@ app.post("/register", (req, res) => {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
-  // Генерация JWT токена для нового пользователя
   const token = jwt.sign({ username, email }, SECRET_KEY, { expiresIn: "7d" });
 
   const sql = "INSERT INTO users (`username`, `email`, `password`, `status`, `token`) VALUES (?)";
@@ -71,7 +70,7 @@ app.post("/register", (req, res) => {
       if (err.code === "ER_DUP_ENTRY") {
         return res.status(409).json({ message: "Email is already in use." });
       }
-      console.error(err); // Вывод ошибки в консоль
+      console.error(err);
       return res.status(500).json({ message: "Database error" });
     }
     return res.status(201).json({ message: "User registered successfully", token });
@@ -123,15 +122,13 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/users/block", authenticateToken, (req, res) => {
-  const { emails } = req.body; // Получаем 'emails' из тела запроса
+  const { emails } = req.body;
 
   if (!Array.isArray(emails) || emails.length === 0) {
     return res.status(400).json({ message: "Invalid request. 'emails' must be a non-empty array." });
   }
 
-  const userEmail = req.user.email; // Получаем email текущего пользователя
-
-  // Проверяем, не пытается ли пользователь заблокировать свой собственный аккаунт
+  const userEmail = req.user.email;
 
   const blockSql = "UPDATE users SET status = 'blocked' WHERE email IN (?)";
   db.query(blockSql, [emails], (err, result) => {

@@ -23,7 +23,10 @@ function SignInModal() {
       setErrorMessage(null);
 
       axios
-        .post(`${API_URL}/login`, values)
+        .post(
+          `${API_URL}/login`,
+          values,
+        )
         .then((res) => {
           const { Status, token, User } = res.data;
           if (Status === 'Success' && token) {

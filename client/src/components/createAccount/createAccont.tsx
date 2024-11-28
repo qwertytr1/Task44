@@ -8,17 +8,16 @@ import axios from 'axios';
 import API_URL from '../../utils/links';
 
 function CreateAccountPage() {
-  const [email, setEmail] = useState<string>('');
   const [username, setUsername] = useState<string>('');
-
+  const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null); // For email validation
   const navigate = useNavigate();
 
-  const validateEmail = (inputEmail: string): boolean => {
+  const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email regex
-    return emailRegex.test(inputEmail);
+    return emailRegex.test(email);
   };
 
   function register(event: React.FormEvent) {
