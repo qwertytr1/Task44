@@ -54,7 +54,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     if (!userToken) return;
     fetchUsers();
-  }, [userToken]);
+  }, [userToken, fetchUsers]);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -156,17 +156,14 @@ const Home: React.FC = () => {
   }, [selectedUsersData, navigate, dataUser, userToken]);
   const handleUnblockUsers = async () => {
     try {
-      const response = await fetch(
-        `${API_URL}/users/unblock`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${userToken}`,
-          },
-          body: JSON.stringify({ ids: selectedIds }),
+      const response = await fetch(`${API_URL}/users/unblock`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userToken}`,
         },
-      );
+        body: JSON.stringify({ ids: selectedIds }),
+      });
 
       if (!response.ok) {
         throw new Error('Failed to unblock users.');
@@ -193,17 +190,14 @@ const Home: React.FC = () => {
     const isCurrentUserDeleting = selectedUsersEmails.includes(userEmail || '');
 
     try {
-      const response = await fetch(
-        `${API_URL}/users/delete`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${userToken}`,
-          },
-          body: JSON.stringify({ ids: selectedIds }),
+      const response = await fetch(`${API_URL}/users/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userToken}`,
         },
-      );
+        body: JSON.stringify({ ids: selectedIds }),
+      });
 
       if (!response.ok) {
         throw new Error('Failed to delete users.');
