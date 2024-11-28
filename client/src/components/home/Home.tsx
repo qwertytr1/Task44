@@ -52,10 +52,9 @@ const Home: React.FC = () => {
   }, [userToken]);
 
   useEffect(() => {
-    if (userToken) {
-      fetchUsers();
-    }
-  }, [fetchUsers, userToken]);
+    if (!userToken) return;
+    fetchUsers();
+  }, [userToken]);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -66,8 +65,12 @@ const Home: React.FC = () => {
   const handleSelectAll = useCallback(() => {
     if (selectAll) {
       setSelectedIds([]);
+      setSelectedUsersData([]);
     } else {
-      setSelectedIds(users.map((u) => u.id));
+      const allIds = users.map((u) => u.id);
+      const allUsers = users; // Все пользователи
+      setSelectedIds(allIds);
+      setSelectedUsersData(allUsers);
     }
     setSelectAll(!selectAll);
   }, [selectAll, users]);
@@ -89,7 +92,6 @@ const Home: React.FC = () => {
     },
     [selectedIds, users],
   );
-
   const handleBlockUsers = useCallback(async () => {
     const userEmail = dataUser?.email;
 
@@ -154,17 +156,19 @@ const Home: React.FC = () => {
       console.error('Error while blocking users:', error);
     }
   }, [selectedUsersData, navigate, dataUser, userToken]);
-
   const handleUnblockUsers = async () => {
     try {
-      const response = await fetch(`${API_URL}/users/unblock`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+      const response = await fetch(
+        `${API_URL}/users/unblock`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify({ ids: selectedIds }),
         },
-        body: JSON.stringify({ ids: selectedIds }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error('Failed to unblock users.');
@@ -191,14 +195,17 @@ const Home: React.FC = () => {
     const isCurrentUserDeleting = selectedUsersEmails.includes(userEmail || '');
 
     try {
-      const response = await fetch(`${API_URL}/users/delete`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+      const response = await fetch(
+        `${API_URL}/users/delete`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify({ ids: selectedIds }),
         },
-        body: JSON.stringify({ ids: selectedIds }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error('Failed to delete users.');
